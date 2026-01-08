@@ -275,6 +275,7 @@ class RoboVacEntity(StateVacuumEntity):
     @property
     def activity(self) -> VacuumActivity | None:
         """Return the state of the vacuum."""
+        self.update_entity_values()
         if self.tuya_state is None:
             return VacuumActivity.ERROR
         elif (
@@ -394,7 +395,6 @@ class RoboVacEntity(StateVacuumEntity):
         self.error_code = None
         self.tuya_state = None
         self.tuyastatus = None
-        self.async_forced_update()
 
     async def async_added_to_hass(self):
         await self.async_forced_update()
