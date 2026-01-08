@@ -27,15 +27,16 @@ import ast
 from typing import Any
 from enum import IntEnum, StrEnum
 from homeassistant.loader import bind_hass
-from homeassistant.components.vacuum import (
-    StateVacuumEntity,
-    STATE_CLEANING,
-    STATE_DOCKED,
-    STATE_ERROR,
-    STATE_IDLE,
-    STATE_RETURNING,
-    STATE_PAUSED
-)
+#from homeassistant.components.vacuum import (
+#    StateVacuumEntity,
+#    STATE_CLEANING,
+#    STATE_DOCKED,
+#    STATE_ERROR,
+#    STATE_IDLE,
+#    STATE_RETURNING,
+#    STATE_PAUSED
+#)
+from homeassistant.components.vacuum import VacuumActivity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import (
@@ -242,10 +243,39 @@ class RoboVacEntity(StateVacuumEntity):
         """Return the ip address of the vacuum cleaner."""
         return self._attr_ip_address
 
+#    @property
+#    def state(self) -> str | None:
+#        if self.tuya_state is None:
+#            return STATE_UNAVAILABLE
+#        elif (
+#            type(self.error_code) is not None
+#            and self.error_code
+#            and self.error_code
+#            not in [
+#                0,
+#                "no_error",
+#            ]
+#        ):
+#            _LOGGER.debug(
+#                "State changed to error. Error message: {}".format(
+#                    getErrorMessage(self.error_code)
+#                )
+#            )
+#            return STATE_ERROR
+#        elif self.tuya_state == "Charging" or self.tuya_state == "Completed":
+#            return STATE_DOCKED
+#        elif self.tuya_state == "Recharge":
+#            return STATE_RETURNING
+#        elif self.tuya_state == "Sleeping" or self.tuya_state == "Standby":
+#            return STATE_IDLE
+#        else:
+#            return STATE_CLEANING
+
     @property
-    def state(self) -> str | None:
+    def activity(self) -> VacuumActivity | None:
+        """Return the state of the vacuum."""
         if self.tuya_state is None:
-            return STATE_UNAVAILABLE
+            return VacuumActivity.ERROR
         elif (
             type(self.error_code) is not None
             and self.error_code
@@ -260,15 +290,17 @@ class RoboVacEntity(StateVacuumEntity):
                     getErrorMessage(self.error_code)
                 )
             )
-            return STATE_ERROR
+            return VacuumActivity.ERROR
         elif self.tuya_state == "Charging" or self.tuya_state == "Completed":
-            return STATE_DOCKED
+            return VacuumActivity.DOCKED
         elif self.tuya_state == "Recharge":
-            return STATE_RETURNING
+            return VacuumActivity.RETURNING
         elif self.tuya_state == "Sleeping" or self.tuya_state == "Standby":
-            return STATE_IDLE
+            return VacuumActivity.IDLE
+        elif self.tuya_state == "Cleaning paused" or self.tuya_state == "Cleaning room paused" or self.tuya_state == "Cleaning spot paused":
+            return VacuumActivity.PAUSED
         else:
-            return STATE_CLEANING
+            return VacuumActivity.CLEANING
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
