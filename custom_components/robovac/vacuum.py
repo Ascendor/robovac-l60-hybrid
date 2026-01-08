@@ -395,7 +395,6 @@ class RoboVacEntity(StateVacuumEntity):
         self.tuya_state = None
         self.tuyastatus = None
         await self.async_forced_update()
-()
 
     async def async_added_to_hass(self):
         await self.async_forced_update()
