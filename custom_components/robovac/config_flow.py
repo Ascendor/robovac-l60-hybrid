@@ -202,9 +202,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
         """Get the options flow for this handler."""
-        return OptionsFlowHandler(config_entry)
+        return OptionsFlowHandler()
 
 
 class CannotConnect(HomeAssistantError):
@@ -218,11 +220,12 @@ class InvalidAuth(HomeAssistantError):
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Handles options flow for the component."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry = config_entry
-        self.selected_vacuum = None
+    def __init__(self) -> None:
+        """Initialize options flow."""
+        self.selected_vacuum: str | None = None
 
     async def async_step_init(self, user_input=None):
+        """Handle the initial step of options flow."""
         errors = {}
 
         if user_input is not None:
@@ -260,7 +263,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
             self.hass.config_entries.async_update_entry(
                 self.config_entry,
-                data={CONF_VACS: updated_vacuums},
+                data={**self.config_entry.data, CONF_VACS: updated_vacuums},
             )
 
             return self.async_create_entry(title="", data={})
