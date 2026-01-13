@@ -28,13 +28,13 @@ PLATFORMS = [Platform.VACUUM, Platform.SENSOR]
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup(hass, entry) -> bool:
-    hass.data.setdefault(DOMAIN, {CONF_VACS:{}})
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    hass.data.setdefault(DOMAIN, {CONF_VACS: {}})
 
     async def update_device(device):
         entry = async_get_config_entry_for_device(hass, device["gwId"])
 
-        if entry == None:
+        if entry is None:
             return
 
         if not entry.state.recoverable:
@@ -77,21 +77,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    if unload_ok := await hass.config_entries.async_unload_platforms(
-        entry, PLATFORMS
-    ):
-        """Nothing"""
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     return unload_ok
 
 
-async def update_listener(hass, entry):
+async def update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update."""
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-def async_get_config_entry_for_device(hass, device_id):
+def async_get_config_entry_for_device(
+    hass: HomeAssistant, device_id: str
+) -> ConfigEntry | None:
     current_entries = hass.config_entries.async_entries(DOMAIN)
     for entry in current_entries:
-        if device_id in entry.data[CONF_VACS]:
+        if CONF_VACS in entry.data and device_id in entry.data[CONF_VACS]:
             return entry
     return None
